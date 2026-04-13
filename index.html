@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT ENTROPY - Command The Galaxy</title>
+    <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #030810;
+            color: #ffffff;
+            position: relative;
+        }
+
+        /* ── VIDEO BACKGROUND ── */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* dark overlay + vignette */
+        .video-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.72) 100%),
+                linear-gradient(180deg, rgba(0,15,30,0.55) 0%, rgba(0,5,15,0.75) 100%);
+            z-index: 1;
+        }
+
+        /* grid lines */
+        .grid-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+            background-image:
+                linear-gradient(rgba(0,200,255,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,200,255,0.035) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 3;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 3px,
+                rgba(0,200,255,0.01) 3px,
+                rgba(0,200,255,0.01) 4px
+            );
+            pointer-events: none;
+        }
+
+        /* corner brackets */
+        .corner {
+            position: fixed;
+            width: 55px;
+            height: 55px;
+            z-index: 4;
+            pointer-events: none;
+        }
+        .corner--tl { top: 18px; left: 18px; border-top: 2px solid rgba(0,200,255,0.5); border-left: 2px solid rgba(0,200,255,0.5); }
+        .corner--tr { top: 18px; right: 18px; border-top: 2px solid rgba(0,200,255,0.5); border-right: 2px solid rgba(0,200,255,0.5); }
+        .corner--bl { bottom: 18px; left: 18px; border-bottom: 2px solid rgba(0,200,255,0.5); border-left: 2px solid rgba(0,200,255,0.5); }
+        .corner--br { bottom: 18px; right: 18px; border-bottom: 2px solid rgba(0,200,255,0.5); border-right: 2px solid rgba(0,200,255,0.5); }
+
+        /* accent lines */
+        .h-line {
+            position: fixed;
+            left: 72px; right: 72px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,200,255,0.28), transparent);
+            z-index: 4;
+            pointer-events: none;
+        }
+        .h-line--top    { top: 18px; }
+        .h-line--bottom { bottom: 18px; }
+
+        /* ── LAYOUT ── */
+        .page-wrapper {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 18px;
+            padding: 20px;
+        }
+
+        /* ── LOGO ── */
+        .logo {
+            max-height: 120px;
+            height: auto;
+            width: auto;
+            max-width: 80vw;
+            filter: drop-shadow(0 0 20px rgba(0,200,255,0.6));
+        }
+
+        /* ── TITLE ── */
+        .title-block {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .title-line-1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            font-weight: 900;
+            letter-spacing: 6px;
+            font-size: clamp(1.6rem, 3.8vw, 3rem);
+            text-shadow: 0 0 14px rgba(0,200,255,1), 0 0 40px rgba(0,200,255,0.4);
+        }
+
+        .title-line-2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00c8ff;
+            font-weight: 700;
+            letter-spacing: 10px;
+            font-size: clamp(0.9rem, 2vw, 1.7rem);
+            text-shadow: 0 0 10px rgba(0,200,255,0.9), 0 0 28px rgba(0,200,255,0.4);
+        }
+
+        /* ── HERO IMAGE ── */
+        .hero-container {
+            text-align: center;
+        }
+
+        .hero-image {
+            max-height: 36vh;
+            max-width: 88vw;
+            object-fit: contain;
+            height: auto;
+            width: auto;
+            filter: drop-shadow(0 0 22px rgba(0,200,255,0.28));
+        }
+
+        /* ── BENEFITS ── */
+        .benefits-row {
+            display: flex;
+            flex-direction: row;
+            gap: 36px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .benefit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .benefit-icon {
+            color: #00c8ff;
+            font-size: 1rem;
+            text-shadow: 0 0 10px rgba(0,200,255,0.9);
+        }
+
+        .benefit-text {
+            color: #b8e8f8;
+            font-weight: 600;
+            font-size: clamp(0.82rem, 1.5vw, 0.98rem);
+            letter-spacing: 1px;
+        }
+
+        /* ── CTA — modern blink ── */
+        .cta-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cta-glow {
+            position: absolute;
+            inset: -12px;
+            border-radius: 6px;
+            pointer-events: none;
+            animation: glowBlink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes glowBlink {
+            0%, 100% { box-shadow: 0 0 32px 10px rgba(0,200,255,0.4); opacity: 1; }
+            50%       { box-shadow: 0 0 8px  2px rgba(0,200,255,0.1); opacity: 0.3; }
+        }
+
+        .cta-button {
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #003d55 0%, #006b8f 50%, #00a8d4 100%);
+            border: 1px solid rgba(0,200,255,0.8);
+            border-radius: 4px;
+            padding: 18px 62px;
+            font-size: clamp(0.85rem, 1.7vw, 1.1rem);
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #ffffff;
+            cursor: pointer;
+            clip-path: polygon(14px 0%, 100% 0%, calc(100% - 14px) 100%, 0% 100%);
+            transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+            animation: textBlink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes textBlink {
+            0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 22px rgba(0,200,255,0.7); }
+            50%       { text-shadow: 0 0 2px  rgba(255,255,255,0.2), 0 0 5px  rgba(0,200,255,0.2); }
+        }
+
+        /* shimmer sweep */
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -120%;
+            width: 55%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.13), transparent);
+            animation: shimmerSweep 2.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmerSweep {
+            0%   { left: -120%; }
+            55%  { left: 160%; }
+            100% { left: 160%; }
+        }
+
+        .cta-button:hover {
+            transform: scale(1.04);
+            background: linear-gradient(135deg, #005070 0%, #0090bf 50%, #00d4ff 100%);
+            box-shadow: 0 0 42px rgba(0,200,255,0.75);
+            animation: none;
+            text-shadow: 0 0 14px rgba(255,255,255,1), 0 0 32px rgba(0,200,255,1);
+        }
+
+        /* ── STICKY BAR ── */
+        .sticky-bar {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            z-index: 999;
+            background: rgba(2,10,20,0.96);
+            border-top: 1px solid rgba(0,200,255,0.28);
+            padding: 12px;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+            box-shadow: 0 -4px 22px rgba(0,200,255,0.1);
+        }
+
+        .sticky-bar.visible {
+            transform: translateY(0);
+        }
+
+        .cta-small {
+            padding: 10px 36px;
+            font-size: 0.78rem;
+            letter-spacing: 2px;
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 768px) {
+            html, body { overflow-y: auto; }
+
+            .hero-image { max-height: 28vh; }
+
+            .benefits-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .cta-button {
+                padding: 14px 32px;
+                font-size: 0.8rem;
+                clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+            }
+
+            .sticky-bar { transform: translateY(0); }
+            .corner { width: 36px; height: 36px; }
+            .h-line { left: 46px; right: 46px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video background -->
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="https://pe.gamezof.com/PE%20Vbackground.mp4" type="video/mp4">
+    </video>
+
+    <!-- Overlays -->
+    <div class="video-overlay"></div>
+    <div class="grid-layer"></div>
+    <div class="scanlines"></div>
+
+    <!-- Corner brackets -->
+    <div class="corner corner--tl"></div>
+    <div class="corner corner--tr"></div>
+    <div class="corner corner--bl"></div>
+    <div class="corner corner--br"></div>
+
+    <!-- Accent lines -->
+    <div class="h-line h-line--top"></div>
+    <div class="h-line h-line--bottom"></div>
+
+    <!-- Main content -->
+    <div class="page-wrapper">
+
+        <img src="https://pe.gamezof.com/logo.png" alt="Project Entropy" class="logo">
+
+        <div class="title-block">
+            <h1 class="title-line-1">COMMAND THE GALAXY</h1>
+            <h2 class="title-line-2">YOUR EMPIRE STARTS NOW</h2>
+        </div>
+
+        <div class="hero-container">
+            <img src="https://pe.gamezof.com/a2.png" alt="Project Entropy Gameplay" class="hero-image">
+        </div>
+
+        <div class="benefits-row">
+            <div class="benefit">
+                <span class="benefit-icon">✦</span>
+                <span class="benefit-text">Build Mechs &mdash; Crush Enemies &mdash; Dominate</span>
+            </div>
+            <div class="benefit">
+                <span class="benefit-icon">✦</span>
+                <span class="benefit-text">Free to Play &mdash; No Limits &mdash; No Excuses</span>
+            </div>
+        </div>
+
+        <div class="cta-wrapper">
+            <div class="cta-glow"></div>
+            <button id="main-cta" class="cta-button">PLAY FREE &mdash; JOIN THE FLEET</button>
+        </div>
+
+    </div>
+
+    <!-- Sticky bar -->
+    <div id="sticky-bar" class="sticky-bar">
+        <button id="sticky-cta" class="cta-button cta-small">PLAY FREE &mdash; JOIN THE FLEET</button>
+    </div>
+
+    <script>
+    (function() {
+        var affiliateUrl = 'https://to.wendiro.com/u?k=220e77cdef8b42929dd5c06ff71b4ae5&via=15055';
+        var paramsToPreserve = ['clickid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+
+        function getUrlParams() {
+            var params = {};
+            var searchParams = new URLSearchParams(window.location.search);
+            paramsToPreserve.forEach(function(param) {
+                if (searchParams.has(param)) params[param] = searchParams.get(param);
+            });
+            return params;
+        }
+
+        function buildDestinationUrl() {
+            var params = getUrlParams();
+            var url = affiliateUrl;
+            var keys = Object.keys(params);
+            if (keys.length > 0) {
+                var sep = url.indexOf('?') > -1 ? '&' : '?';
+                url += sep + keys.map(function(k) {
+                    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+                }).join('&');
+            }
+            return url;
+        }
+
+        function handleCtaClick() {
+            window.location.href = buildDestinationUrl();
+        }
+
+        function handleScroll() {
+            var scrollY = window.scrollY || window.pageYOffset;
+            var scrollH = document.documentElement.scrollHeight;
+            var winH = window.innerHeight;
+            var pct = scrollY / (scrollH - winH);
+            document.getElementById('sticky-bar').classList.toggle('visible', pct > 0.35);
+        }
+
+        document.getElementById('main-cta').addEventListener('click', handleCtaClick);
+        document.getElementById('sticky-cta').addEventListener('click', handleCtaClick);
+        window.addEventListener('scroll', handleScroll);
+    })();
+    </script>
+
+</body>
+</html>
